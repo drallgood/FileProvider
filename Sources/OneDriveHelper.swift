@@ -195,6 +195,15 @@ extension OneDriveFileProvider {
         createRequest.httpMethod = "POST"
         createRequest.setValue(authentication: self.credential, with: .oAuth2)
         createRequest.setValue(contentType: .json)
+        
+        // Debug: Log the authorization header being sent
+        if let authHeader = createRequest.value(forHTTPHeaderField: "Authorization") {
+            let prefix = String(authHeader.prefix(30))
+            let suffix = String(authHeader.suffix(10))
+            print("[OneDrive] createUploadSession auth header: \(prefix)...\(suffix), length: \(authHeader.count)")
+        } else {
+            print("[OneDrive] WARNING: No Authorization header set for createUploadSession!")
+        }
         if overwrite {
             createRequest.httpBody = Data(jsonDictionary: ["item": ["@microsoft.graph.conflictBehavior": "replace"] as NSDictionary])
         } else {
