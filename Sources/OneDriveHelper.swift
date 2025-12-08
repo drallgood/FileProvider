@@ -254,7 +254,9 @@ extension OneDriveFileProvider {
         let maximumSize: Int64 = 10_485_760 // Recommended by OneDrive documentations and divides evenly by 320 KiB, max 60MiB.
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
-        request.setValue(authentication: self.credential, with: .oAuth2)
+        // NOTE: Do NOT set Authorization header for upload session URL - the URL itself is pre-authenticated
+        // Setting the Bearer token here causes a 401 error
+        // request.setValue(authentication: self.credential, with: .oAuth2)
         print("[OneDrive] upload_multipart to URL: \(url.absoluteString.prefix(100))...")
         
         let finalRange: Range<Int64>
