@@ -206,10 +206,31 @@ extension OneDriveFileProvider {
                 return
             }
             
-            if let data = data, let json = data.deserializeJSON(),
-                let uploadURL = (json["uploadUrl"] as? String).flatMap(URL.init(string:)) {
-                self.upload_multipart(url: uploadURL, operation: operation, size: size, progress: progress, dataProvider: dataProvider, completionHandler: completionHandler)
+            // Check HTTP response status code for errors
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode >= 400 {
+                let errorCode = FileProviderHTTPErrorCode(rawValue: httpResponse.statusCode) ?? .badRequest
+                let errorDesc = data.flatMap({ String(data: $0, encoding: .utf8) })
+                let serverError = FileProviderOneDriveError(code: errorCode, path: targetPath, serverDescription: errorDesc)
+                completionHandler?(serverError)
+                return
             }
+            
+            // Parse the upload session response
+            guard let data = data, let json = data.deserializeJSON() else {
+                let error = URLError(.badServerResponse, userInfo: [NSURLErrorFailingURLStringErrorKey: createURL.absoluteString])
+                completionHandler?(error)
+                return
+            }
+            
+            guard let uploadURL = (json["uploadUrl"] as? String).flatMap(URL.init(string:)) else {
+                // Check if there's an error in the response
+                let errorDesc = json["error"].flatMap { String(describing: $0) }
+                let serverError = FileProviderOneDriveError(code: .badRequest, path: targetPath, serverDescription: errorDesc ?? "Failed to create upload session")
+                completionHandler?(serverError)
+                return
+            }
+            
+            self.upload_multipart(url: uploadURL, operation: operation, size: size, progress: progress, dataProvider: dataProvider, completionHandler: completionHandler)
         }
         createSessionTask.resume()
         
