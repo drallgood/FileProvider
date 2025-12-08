@@ -255,6 +255,7 @@ extension OneDriveFileProvider {
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
         request.setValue(authentication: self.credential, with: .oAuth2)
+        print("[OneDrive] upload_multipart to URL: \(url.absoluteString.prefix(100))...")
         
         let finalRange: Range<Int64>
         if let range = range {
@@ -304,7 +305,17 @@ extension OneDriveFileProvider {
         completionHandlersForTasksQueue.async(flags: .barrier) {
             // We retain self here intentionally to allow resuming upload, This behavior may change anytime!
             completionHandlersForTasks[self.session.sessionDescription!]?[task.taskIdentifier] = { [weak task] error in
+                // Log the response for debugging
+                if let httpResponse = task?.response as? HTTPURLResponse {
+                    print("[OneDrive] upload_multipart response status: \(httpResponse.statusCode)")
+                    if httpResponse.statusCode >= 400 {
+                        let responseBody = String(data: allData, encoding: .utf8) ?? "no body"
+                        print("[OneDrive] upload_multipart error response: \(responseBody)")
+                    }
+                }
+                
                 if let error = error {
+                    print("[OneDrive] upload_multipart error: \(error)")
                     progress.cancel()
                     completionHandler?(error)
                     self.delegateNotify(operation, error: error)
