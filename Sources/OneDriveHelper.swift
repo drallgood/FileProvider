@@ -219,6 +219,7 @@ extension OneDriveFileProvider {
             if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode >= 400 {
                 let errorCode = FileProviderHTTPErrorCode(rawValue: httpResponse.statusCode) ?? .badRequest
                 let errorDesc = data.flatMap({ String(data: $0, encoding: .utf8) })
+                print("[OneDrive] createUploadSession failed with status \(httpResponse.statusCode): \(errorDesc ?? "no body")")
                 let serverError = FileProviderOneDriveError(code: errorCode, path: targetPath, serverDescription: errorDesc)
                 completionHandler?(serverError)
                 return
