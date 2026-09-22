@@ -28,7 +28,7 @@ open class LocalFileProvider: NSObject, FileProvider, FileProviderMonitor, FileP
     open private(set) var opFileManager = FileManager()
     fileprivate var fileProviderManagerDelegate: LocalFileProviderManagerDelegate? = nil
     
-    #if os(macOS) || os(iOS) || os(tvOS)
+    #if os(macOS) || os(iOS) || os(tvOS) || os(visionOS)
     open var undoManager: UndoManager? = nil
 
     /**
@@ -55,7 +55,7 @@ open class LocalFileProvider: NSObject, FileProvider, FileProviderMonitor, FileP
         self.init(baseURL: FileManager.default.urls(for: directory, in: domainMask).first!)
     }
     
-    #if os(macOS) || os(iOS) || os(tvOS)
+    #if os(macOS) || os(iOS) || os(tvOS) || os(visionOS)
     /**
      Failable initializer for the specified shared container directory, allows data and files to be shared among app
      and extensions regarding sandbox requirements. Container ID is same with app group specified in project `Capabilities`
