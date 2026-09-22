@@ -579,6 +579,7 @@ open class HTTPFileProvider: NSObject, FileProviderBasicRemote, FileProviderOper
             completionHandler?(error)
         }
         #else
+        let task = self.session.uploadTask(with: request, fromFile: localFile)
         self.upload_task(targetPath, progress: progress, task: task, operation: operation, completionHandler: completionHandler)
         #endif
         
